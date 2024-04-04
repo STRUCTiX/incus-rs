@@ -1,7 +1,7 @@
 //! A Rust library for controlling LXD
 
-use std::process::{Command, Stdio};
 use std::io;
+use std::process::{Command, Stdio};
 
 pub use container::Container;
 pub use image::Image;
@@ -15,8 +15,8 @@ mod info;
 mod location;
 mod snapshot;
 
-fn lxc(args: &[&str]) -> io::Result<()> {
-    let mut cmd = Command::new("lxc");
+fn incus(args: &[&str]) -> io::Result<()> {
+    let mut cmd = Command::new("incus");
     for arg in args.iter() {
         cmd.arg(arg);
     }
@@ -27,13 +27,13 @@ fn lxc(args: &[&str]) -> io::Result<()> {
     } else {
         Err(io::Error::new(
             io::ErrorKind::Other,
-            format!("LXD {:?} failed with {}", args, status)
+            format!("Incus {:?} failed with {}", args, status),
         ))
     }
 }
 
-fn lxc_output(args: &[&str]) -> io::Result<Vec<u8>> {
-    let mut cmd = Command::new("lxc");
+fn incus_output(args: &[&str]) -> io::Result<Vec<u8>> {
+    let mut cmd = Command::new("incus");
     for arg in args.iter() {
         cmd.arg(arg);
     }
@@ -45,7 +45,7 @@ fn lxc_output(args: &[&str]) -> io::Result<Vec<u8>> {
     } else {
         Err(io::Error::new(
             io::ErrorKind::Other,
-            format!("LXD {:?} failed with {}", args, output.status)
+            format!("Incus {:?} failed with {}", args, output.status),
         ))
     }
 }

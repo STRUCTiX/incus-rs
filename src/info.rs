@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::io;
 
-use super::{lxc_output, Location};
+use super::{incus_output, Location};
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Snapshot {
@@ -75,14 +75,16 @@ impl Info {
     /// ```
     pub fn all(location: Location) -> io::Result<Vec<Self>> {
         let json = match location {
-            Location::Local => lxc_output(&["list", "--format", "json"])?,
-            Location::Remote(remote) => lxc_output(&["list", &format!("{}:", remote), "--format", "json"])?
+            Location::Local => incus_output(&["list", "--format", "json"])?,
+            Location::Remote(remote) => {
+                incus_output(&["list", &format!("{}:", remote), "--format", "json"])?
+            }
         };
 
         serde_json::from_slice::<Vec<Self>>(&json).map_err(|err| {
             io::Error::new(
                 io::ErrorKind::Other,
-                format!("LXD info: failed to parse json: {}", err)
+                format!("LXD info: failed to parse json: {}", err),
             )
         })
     }
@@ -112,25 +114,31 @@ impl Info {
     /// ```
     pub fn new(location: Location, name: &str) -> io::Result<Self> {
         let json = match location {
-            Location::Local => lxc_output(&["list", &format!("{}$", name), "--format", "json"])?,
-            Location::Remote(remote) => lxc_output(&["list", &format!("{}:", remote), &format!("{}$", name), "--format", "json"])?
+            Location::Local => incus_output(&["list", &format!("{}$", name), "--format", "json"])?,
+            Location::Remote(remote) => incus_output(&[
+                "list",
+                &format!("{}:", remote),
+                &format!("{}$", name),
+                "--format",
+                "json",
+            ])?,
         };
 
         match serde_json::from_slice::<Vec<Self>>(&json) {
-            Ok(mut list) => if list.len() == 1 {
-                Ok(list.remove(0))
-            } else {
-                Err(io::Error::new(
-                    io::ErrorKind::NotFound,
-                    format!("LXD info: {} not found", name)
-                ))
-            },
-            Err(err) => {
-                Err(io::Error::new(
-                    io::ErrorKind::Other,
-                    format!("LXD info: failed to parse json: {}", err)
-                ))
+            Ok(mut list) => {
+                if list.len() == 1 {
+                    Ok(list.remove(0))
+                } else {
+                    Err(io::Error::new(
+                        io::ErrorKind::NotFound,
+                        format!("LXD info: {} not found", name),
+                    ))
+                }
             }
+            Err(err) => Err(io::Error::new(
+                io::ErrorKind::Other,
+                format!("LXD info: failed to parse json: {}", err),
+            )),
         }
     }
 }

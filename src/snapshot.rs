@@ -1,11 +1,11 @@
 use std::io;
 
-use super::{lxc, Container};
+use super::{incus, Container};
 
 /// An LXD ephemeral snapshot
 pub struct Snapshot<'a> {
     _container: &'a Container,
-    name: String
+    name: String,
 }
 
 impl<'a> Snapshot<'a> {
@@ -24,12 +24,12 @@ impl<'a> Snapshot<'a> {
     /// Errors that are encountered while creating snapshot will be returned
     /// ```
     pub fn new(container: &'a Container, name: &str) -> io::Result<Snapshot<'a>> {
-        lxc(&["snapshot", container.name(), name])?;
+        incus(&["snapshot", container.name(), name])?;
 
         let full_name = format!("{}/{}", container.name(), name);
         Ok(Snapshot {
             _container: container,
-            name: full_name
+            name: full_name,
         })
     }
 
@@ -57,12 +57,12 @@ impl<'a> Snapshot<'a> {
     /// snapshot.publish("test-publish").unwrap();
     /// ```
     pub fn publish(&self, alias: &str) -> io::Result<()> {
-        lxc(&["publish", &self.name, "--alias", alias])
+        incus(&["publish", &self.name, "--alias", alias])
     }
 }
 
 impl<'a> Drop for Snapshot<'a> {
     fn drop(&mut self) {
-        let _ = lxc(&["delete", &self.name]);
+        let _ = incus(&["delete", &self.name]);
     }
 }

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::io;
 
-use super::{lxc_output, Location};
+use super::{incus_output, Location};
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 /// LXD image information
@@ -48,14 +48,16 @@ impl Image {
     /// ```
     pub fn all(location: Location) -> io::Result<Vec<Self>> {
         let json = match location {
-            Location::Local => lxc_output(&["image", "list", "--format", "json"])?,
-            Location::Remote(remote) => lxc_output(&["image", "list", &format!("{}:", remote), "--format", "json"])?
+            Location::Local => incus_output(&["image", "list", "--format", "json"])?,
+            Location::Remote(remote) => {
+                incus_output(&["image", "list", &format!("{}:", remote), "--format", "json"])?
+            }
         };
 
         serde_json::from_slice::<Vec<Self>>(&json).map_err(|err| {
             io::Error::new(
                 io::ErrorKind::Other,
-                format!("LXD image: failed to parse json: {}", err)
+                format!("LXD image: failed to parse json: {}", err),
             )
         })
     }
@@ -77,25 +79,32 @@ impl Image {
     /// ```
     pub fn new(location: Location, name: &str) -> io::Result<Self> {
         let json = match location {
-            Location::Local => lxc_output(&["image", "list", name, "--format", "json"])?,
-            Location::Remote(remote) => lxc_output(&["image", "list", &format!("{}:", remote), name, "--format", "json"])?
+            Location::Local => incus_output(&["image", "list", name, "--format", "json"])?,
+            Location::Remote(remote) => incus_output(&[
+                "image",
+                "list",
+                &format!("{}:", remote),
+                name,
+                "--format",
+                "json",
+            ])?,
         };
 
         match serde_json::from_slice::<Vec<Self>>(&json) {
-            Ok(mut list) => if list.len() == 1 {
-                Ok(list.remove(0))
-            } else {
-                Err(io::Error::new(
-                    io::ErrorKind::NotFound,
-                    format!("LXD image: {} not found", name)
-                ))
-            },
-            Err(err) => {
-                Err(io::Error::new(
-                    io::ErrorKind::Other,
-                    format!("LXD image: failed to parse json: {}", err)
-                ))
+            Ok(mut list) => {
+                if list.len() == 1 {
+                    Ok(list.remove(0))
+                } else {
+                    Err(io::Error::new(
+                        io::ErrorKind::NotFound,
+                        format!("LXD image: {} not found", name),
+                    ))
+                }
             }
+            Err(err) => Err(io::Error::new(
+                io::ErrorKind::Other,
+                format!("LXD image: failed to parse json: {}", err),
+            )),
         }
     }
 }

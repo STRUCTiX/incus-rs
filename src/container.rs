@@ -1,11 +1,11 @@
 use std::io;
 use std::path::Path;
 
-use super::{lxc, Location, Snapshot};
+use super::{incus, Location, Snapshot};
 
 /// An LXD ephemeral container
 pub struct Container {
-    name: String
+    name: String,
 }
 
 impl Container {
@@ -35,20 +35,33 @@ impl Container {
     pub fn new(location: Location, name: &str, base: &str) -> io::Result<Self> {
         let full_name = match location {
             Location::Local => name.to_string(),
-            Location::Remote(remote) => format!("{}:{}", remote, name)
+            Location::Remote(remote) => format!("{}:{}", remote, name),
         };
 
-        lxc(&["launch", base, &full_name, "-e", "-n", "lxdbr0"])?;
+        incus(&["launch", base, &full_name, "-e", "-n", "lxdbr0"])?;
 
         // XXX: https://bugzilla.redhat.com/show_bug.cgi?id=1419315
-        lxc(&["exec", &full_name, "--mode=non-interactive", "-n", "--", "touch", "/etc/fstab"])?;
+        incus(&[
+            "exec",
+            &full_name,
+            "--mode=non-interactive",
+            "-n",
+            "--",
+            "touch",
+            "/etc/fstab",
+        ])?;
 
         // Hack to wait for network up and running
-        lxc(&["exec", &full_name, "--mode=non-interactive", "-n", "--", "dhclient"])?;
+        incus(&[
+            "exec",
+            &full_name,
+            "--mode=non-interactive",
+            "-n",
+            "--",
+            "dhclient",
+        ])?;
 
-        Ok(Container {
-            name: full_name
-        })
+        Ok(Container { name: full_name })
     }
 
     /// Create a new privileged LXD container
@@ -77,22 +90,44 @@ impl Container {
     pub unsafe fn new_privileged(location: Location, name: &str, base: &str) -> io::Result<Self> {
         let full_name = match location {
             Location::Local => name.to_string(),
-            Location::Remote(remote) => format!("{}:{}", remote, name)
+            Location::Remote(remote) => format!("{}:{}", remote, name),
         };
 
-        lxc(&["launch", base, &full_name, "-e", "-n", "lxdbr0",
-            "-c", "security.privileged=true",
-            "-c", "raw.lxc=lxc.apparmor.profile=unconfined"])?;
+        incus(&[
+            "launch",
+            base,
+            &full_name,
+            "-e",
+            "-n",
+            "lxdbr0",
+            "-c",
+            "security.privileged=true",
+            "-c",
+            "raw.incus=incus.apparmor.profile=unconfined",
+        ])?;
 
         // XXX: https://bugzilla.redhat.com/show_bug.cgi?id=1419315
-        lxc(&["exec", &full_name, "--mode=non-interactive", "-n", "--", "touch", "/etc/fstab"])?;
+        incus(&[
+            "exec",
+            &full_name,
+            "--mode=non-interactive",
+            "-n",
+            "--",
+            "touch",
+            "/etc/fstab",
+        ])?;
 
         // Hack to wait for network up and running
-        lxc(&["exec", &full_name, "--mode=non-interactive", "-n", "--", "dhclient"])?;
+        incus(&[
+            "exec",
+            &full_name,
+            "--mode=non-interactive",
+            "-n",
+            "--",
+            "dhclient",
+        ])?;
 
-        Ok(Container {
-            name: full_name
-        })
+        Ok(Container { name: full_name })
     }
 
     /// Get full name of container
@@ -153,7 +188,7 @@ impl Container {
         for arg in command.as_ref().iter() {
             args.push(arg.as_ref());
         }
-        lxc(&args)
+        incus(&args)
     }
 
     /// Mount a path in an LXD container
@@ -181,7 +216,16 @@ impl Container {
     /// container.mount("source", ".", "/root/source").unwrap();
     /// ```
     pub fn mount<P: AsRef<Path>>(&mut self, name: &str, source: P, dest: &str) -> io::Result<()> {
-        lxc(&["config", "device", "add", &self.name, name, "disk", &format!("source={}", source.as_ref().display()), &format!("path={}", dest)])
+        incus(&[
+            "config",
+            "device",
+            "add",
+            &self.name,
+            name,
+            "disk",
+            &format!("source={}", source.as_ref().display()),
+            &format!("path={}", dest),
+        ])
     }
 
     /// Push a file to the LXD container
@@ -215,23 +259,28 @@ impl Container {
     ///     container.push(tmp.path(), "/root", true).unwrap();
     /// }
     /// ```
-    pub fn push<P: AsRef<Path>>(&mut self, source: P, dest: &str, recursive: bool) -> io::Result<()> {
+    pub fn push<P: AsRef<Path>>(
+        &mut self,
+        source: P,
+        dest: &str,
+        recursive: bool,
+    ) -> io::Result<()> {
         if recursive {
-            lxc(&[
+            incus(&[
                 "file",
                 "push",
                 "--quiet",
                 "--recursive",
                 &format!("{}", source.as_ref().display()),
-                &format!("{}/{}", self.name, dest)
+                &format!("{}/{}", self.name, dest),
             ])
         } else {
-            lxc(&[
+            incus(&[
                 "file",
                 "push",
                 "--quiet",
                 &format!("{}", source.as_ref().display()),
-                &format!("{}/{}", self.name, dest)
+                &format!("{}/{}", self.name, dest),
             ])
         }
     }
@@ -268,23 +317,28 @@ impl Container {
     ///     container.pull("/root/artifacts", tmp.path(), true).unwrap();
     /// }
     /// ```
-    pub fn pull<P: AsRef<Path>>(&mut self, source: &str, dest: P, recursive: bool) -> io::Result<()> {
+    pub fn pull<P: AsRef<Path>>(
+        &mut self,
+        source: &str,
+        dest: P,
+        recursive: bool,
+    ) -> io::Result<()> {
         if recursive {
-            lxc(&[
+            incus(&[
                 "file",
                 "pull",
                 "--quiet",
                 "--recursive",
                 &format!("{}/{}", self.name, source),
-                &format!("{}", dest.as_ref().display())
+                &format!("{}", dest.as_ref().display()),
             ])
         } else {
-            lxc(&[
+            incus(&[
                 "file",
                 "pull",
                 "--quiet",
                 &format!("{}/{}", self.name, source),
-                &format!("{}", dest.as_ref().display())
+                &format!("{}", dest.as_ref().display()),
             ])
         }
     }
@@ -292,6 +346,6 @@ impl Container {
 
 impl Drop for Container {
     fn drop(&mut self) {
-        let _ = lxc(&["stop", &self.name]);
+        let _ = incus(&["stop", &self.name]);
     }
 }
