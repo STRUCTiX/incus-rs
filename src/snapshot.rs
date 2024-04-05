@@ -2,7 +2,7 @@ use std::io;
 
 use super::{incus, Container};
 
-/// An LXD ephemeral snapshot
+/// An Incus ephemeral snapshot
 pub struct Snapshot<'a> {
     _container: &'a Container,
     name: String,
@@ -50,7 +50,7 @@ impl<'a> Snapshot<'a> {
     /// # Example
     ///
     /// ```
-    /// use lxd::{Container, Location, Snapshot};
+    /// use incus::{Container, Location, Snapshot};
     ///
     /// let container = Container::new(Location::Local, "test-snapshot-publish", "ubuntu:16.04").unwrap();
     /// let snapshot = Snapshot::new(&container, "test-snapshot-publish").unwrap();

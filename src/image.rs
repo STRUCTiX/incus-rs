@@ -5,7 +5,7 @@ use std::io;
 use super::{incus_output, Location};
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
-/// LXD image information
+/// Incus image information
 pub struct Image {
     pub auto_update: bool,
     pub properties: BTreeMap<String, String>,
@@ -25,7 +25,7 @@ pub struct Image {
 }
 
 impl Image {
-    /// Retrieve LXD container image information from all images
+    /// Retrieve Incus container image information from all images
     ///
     /// # Arguments
     ///
@@ -33,7 +33,7 @@ impl Image {
     ///
     /// # Return
     ///
-    /// The LXD image information
+    /// The Incus image information
     ///
     /// # Errors
     ///
@@ -42,7 +42,7 @@ impl Image {
     /// # Example
     ///
     /// ```
-    /// use lxd::{Image, Location};
+    /// use incus::{Image, Location};
     ///
     /// let images = Image::all(Location::Local).unwrap();
     /// ```
@@ -57,12 +57,12 @@ impl Image {
         serde_json::from_slice::<Vec<Self>>(&json).map_err(|err| {
             io::Error::new(
                 io::ErrorKind::Other,
-                format!("LXD image: failed to parse json: {}", err),
+                format!("Incus image: failed to parse json: {}", err),
             )
         })
     }
 
-    /// Retrieve LXD image information from one image
+    /// Retrieve Incus image information from one image
     ///
     /// # Arguments
     ///
@@ -71,7 +71,7 @@ impl Image {
     ///
     /// # Return
     ///
-    /// The LXD image information
+    /// The Incus image information
     ///
     /// # Errors
     ///
@@ -97,13 +97,13 @@ impl Image {
                 } else {
                     Err(io::Error::new(
                         io::ErrorKind::NotFound,
-                        format!("LXD image: {} not found", name),
+                        format!("Incus image: {} not found", name),
                     ))
                 }
             }
             Err(err) => Err(io::Error::new(
                 io::ErrorKind::Other,
-                format!("LXD image: failed to parse json: {}", err),
+                format!("Incus image: failed to parse json: {}", err),
             )),
         }
     }

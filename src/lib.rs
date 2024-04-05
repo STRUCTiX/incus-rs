@@ -1,4 +1,4 @@
-//! A Rust library for controlling LXD
+//! A Rust library for controlling Incus
 
 use std::io;
 use std::process::{Command, Stdio};

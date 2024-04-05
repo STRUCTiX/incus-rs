@@ -3,13 +3,13 @@ use std::path::Path;
 
 use super::{incus, Location, Snapshot};
 
-/// An LXD ephemeral container
+/// An Incus ephemeral container
 pub struct Container {
     name: String,
 }
 
 impl Container {
-    /// Create a new LXD container
+    /// Create a new Incus container
     ///
     /// # Arguments
     ///
@@ -19,7 +19,7 @@ impl Container {
     ///
     /// # Return
     ///
-    /// The newly created LXD container
+    /// The newly created Incus container
     ///
     /// # Errors
     ///
@@ -28,7 +28,7 @@ impl Container {
     /// # Example
     ///
     /// ```
-    /// use lxd::{Container, Location};
+    /// use incus::{Container, Location};
     ///
     /// let mut container = Container::new(Location::Local, "test-new", "ubuntu:16.04").unwrap();
     /// ```
@@ -64,7 +64,7 @@ impl Container {
         Ok(Container { name: full_name })
     }
 
-    /// Create a new privileged LXD container
+    /// Create a new privileged Incus container
     ///
     /// # Arguments
     ///
@@ -74,7 +74,7 @@ impl Container {
     ///
     /// # Return
     ///
-    /// The newly created LXD container
+    /// The newly created Incus container
     ///
     /// # Errors
     ///
@@ -83,7 +83,7 @@ impl Container {
     /// # Example
     ///
     /// ```
-    /// use lxd::{Container, Location};
+    /// use incus::{Container, Location};
     ///
     /// let mut container = unsafe { Container::new_privileged(Location::Local, "test-new-privileged", "ubuntu:16.04").unwrap() };
     /// ```
@@ -152,7 +152,7 @@ impl Container {
     /// # Example
     ///
     /// ```
-    /// use lxd::{Container, Location, Snapshot};
+    /// use incus::{Container, Location, Snapshot};
     ///
     /// let container = Container::new(Location::Local, "test-snapshot", "ubuntu:16.04").unwrap();
     /// container.snapshot("test-snapshot").unwrap();
@@ -161,7 +161,7 @@ impl Container {
         Snapshot::new(self, name)
     }
 
-    /// Run a command in an LXD container
+    /// Run a command in an Incus container
     ///
     /// # Arguments
     ///
@@ -178,7 +178,7 @@ impl Container {
     /// # Example
     ///
     /// ```
-    /// use lxd::{Container, Location};
+    /// use incus::{Container, Location};
     ///
     /// let mut container = Container::new(Location::Local, "test-exec", "ubuntu:16.04").unwrap();
     /// container.exec(&["echo", "hello"]).unwrap();
@@ -191,7 +191,7 @@ impl Container {
         incus(&args)
     }
 
-    /// Mount a path in an LXD container
+    /// Mount a path in an Incus container
     ///
     /// # Arguments
     ///
@@ -210,7 +210,7 @@ impl Container {
     /// # Example
     ///
     /// ```
-    /// use lxd::{Container, Location};
+    /// use incus::{Container, Location};
     ///
     /// let mut container = Container::new(Location::Local, "test-mount", "ubuntu:16.04").unwrap();
     /// container.mount("source", ".", "/root/source").unwrap();
@@ -228,7 +228,7 @@ impl Container {
         ])
     }
 
-    /// Push a file to the LXD container
+    /// Push a file to the Incus container
     ///
     /// # Arguments
     ///
@@ -247,10 +247,10 @@ impl Container {
     /// # Example
     ///
     /// ```
-    /// extern crate lxd;
+    /// extern crate incus;
     /// extern crate tempdir;
     ///
-    /// use lxd::{Container, Location};
+    /// use incus::{Container, Location};
     /// use tempdir::TempDir;
     ///
     /// fn main() {
@@ -285,7 +285,7 @@ impl Container {
         }
     }
 
-    /// Pull a file from the LXD container
+    /// Pull a file from the Incus container
     ///
     /// # Arguments
     ///
@@ -304,10 +304,10 @@ impl Container {
     /// # Example
     ///
     /// ```
-    /// extern crate lxd;
+    /// extern crate incus;
     /// extern crate tempdir;
     ///
-    /// use lxd::{Container, Location};
+    /// use incus::{Container, Location};
     /// use tempdir::TempDir;
     ///
     /// fn main() {

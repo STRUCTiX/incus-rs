@@ -32,7 +32,7 @@ pub struct State {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
-/// LXD container information
+/// Incus container information
 pub struct Info {
     pub architecture: String,
     pub config: BTreeMap<String, String>,
@@ -52,7 +52,7 @@ pub struct Info {
 }
 
 impl Info {
-    /// Retrieve LXD container information from all containers
+    /// Retrieve Incus container information from all containers
     ///
     /// # Arguments
     ///
@@ -60,7 +60,7 @@ impl Info {
     ///
     /// # Return
     ///
-    /// The LXD container information
+    /// The Incus container information
     ///
     /// # Errors
     ///
@@ -69,7 +69,7 @@ impl Info {
     /// # Example
     ///
     /// ```
-    /// use lxd::{Info, Location};
+    /// use incus::{Info, Location};
     ///
     /// let info = Info::all(Location::Local).unwrap();
     /// ```
@@ -84,12 +84,12 @@ impl Info {
         serde_json::from_slice::<Vec<Self>>(&json).map_err(|err| {
             io::Error::new(
                 io::ErrorKind::Other,
-                format!("LXD info: failed to parse json: {}", err),
+                format!("Incus info: failed to parse json: {}", err),
             )
         })
     }
 
-    /// Retrieve LXD container information from one container
+    /// Retrieve Incus container information from one container
     ///
     /// # Arguments
     ///
@@ -98,7 +98,7 @@ impl Info {
     ///
     /// # Return
     ///
-    /// The LXD container information
+    /// The Incus container information
     ///
     /// # Errors
     ///
@@ -107,7 +107,7 @@ impl Info {
     /// # Example
     ///
     /// ```
-    /// use lxd::{Container, Info, Location};
+    /// use incus::{Container, Info, Location};
     ///
     /// let mut container = Container::new(Location::Local, "test-info", "ubuntu:16.04").unwrap();
     /// let info = Info::new(Location::Local, "test-info").unwrap();
@@ -131,13 +131,13 @@ impl Info {
                 } else {
                     Err(io::Error::new(
                         io::ErrorKind::NotFound,
-                        format!("LXD info: {} not found", name),
+                        format!("Incus info: {} not found", name),
                     ))
                 }
             }
             Err(err) => Err(io::Error::new(
                 io::ErrorKind::Other,
-                format!("LXD info: failed to parse json: {}", err),
+                format!("Incus info: failed to parse json: {}", err),
             )),
         }
     }
