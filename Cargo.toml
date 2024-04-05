@@ -2,10 +2,10 @@
 name = "incus"
 version = "0.1.9"
 edition = "2021"
-authors = ["Jeremy Soller <jackpot51@gmail.com>"]
+authors = ["Jeremy Soller <jackpot51@gmail.com>", "structix <kontakt@structix.de>"]
 description = "A Rust library for controlling Incus"
 documentation = "https://docs.rs/incus"
-repository = "https://github.com/system76/lxd-rs"
+repository = "https://github.com/STRUCTiX/incus-rs"
 readme = "README.md"
 license = "MIT"
 

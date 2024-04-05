@@ -38,7 +38,7 @@ impl Container {
             Location::Remote(remote) => format!("{}:{}", remote, name),
         };
 
-        incus(&["launch", base, &full_name, "-e", "-n", "lxdbr0"])?;
+        incus(&["launch", base, &full_name, "-e", "-n", "incusbr0"])?;
 
         // XXX: https://bugzilla.redhat.com/show_bug.cgi?id=1419315
         incus(&[
@@ -99,7 +99,7 @@ impl Container {
             &full_name,
             "-e",
             "-n",
-            "lxdbr0",
+            "incusbr0",
             "-c",
             "security.privileged=true",
             "-c",
