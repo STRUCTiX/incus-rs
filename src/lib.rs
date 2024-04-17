@@ -17,9 +17,7 @@ mod snapshot;
 
 fn incus(args: &[&str]) -> io::Result<()> {
     let mut cmd = Command::new("incus");
-    for arg in args.iter() {
-        cmd.arg(arg);
-    }
+    cmd.args(args);
 
     let status = cmd.spawn()?.wait()?;
     if status.success() {
@@ -34,9 +32,8 @@ fn incus(args: &[&str]) -> io::Result<()> {
 
 fn incus_output(args: &[&str]) -> io::Result<Vec<u8>> {
     let mut cmd = Command::new("incus");
-    for arg in args.iter() {
-        cmd.arg(arg);
-    }
+    cmd.args(args);
+
     cmd.stdout(Stdio::piped());
 
     let output = cmd.spawn()?.wait_with_output()?;
