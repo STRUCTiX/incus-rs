@@ -38,7 +38,9 @@ impl Container {
             Location::Remote(remote) => format!("{}:{}", remote, name),
         };
 
-        incus(&["launch", base, &full_name, "-e", "-n", "incusbr0"])?;
+        let image_base = format!("images:{base}");
+
+        incus(&["launch", &image_base, &full_name, "-e", "-n", "incusbr0"])?;
 
         // XXX: https://bugzilla.redhat.com/show_bug.cgi?id=1419315
         incus(&[
@@ -52,14 +54,17 @@ impl Container {
         ])?;
 
         // Hack to wait for network up and running
-        incus(&[
-            "exec",
-            &full_name,
-            "--mode=non-interactive",
-            "-n",
-            "--",
-            "dhclient",
-        ])?;
+        //incus(&[
+        //    "exec",
+        //    &full_name,
+        //    "--mode=non-interactive",
+        //    "-n",
+        //    "--",
+        //    "dhclient",
+        //])?;
+
+        // Start the container
+        //incus(&["start", &full_name])?;
 
         Ok(Container { name: full_name })
     }
@@ -188,6 +193,33 @@ impl Container {
         for arg in command.as_ref().iter() {
             args.push(arg.as_ref());
         }
+        incus(&args)
+    }
+
+    /// Add a profile to an Incus container
+    ///
+    /// # Arguments
+    ///
+    /// * `profile_name` - A string of the profile name
+    ///
+    /// # Return
+    ///
+    /// An empty tuple on success
+    ///
+    /// # Errors
+    ///
+    /// Errors that are encountered while executing will be returned
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use incus::{Container, Location};
+    ///
+    /// let mut container = Container::new(Location::Local, "test-exec", "ubuntu:16.04").unwrap();
+    /// container.add_profile("default").unwrap();
+    /// ```
+    pub fn add_profile(&mut self, profile_name: &str) -> io::Result<()> {
+        let args = vec!["profile", "add", &self.name, profile_name];
         incus(&args)
     }
 
